@@ -20,7 +20,7 @@ var allSeries = rows
       .map((y, i) => ({y: new Number(y), x: years[i]})),
   }))
   .filter((x, i) => x.data.length && x.sector !== 'Grand Total')
-var topSeries = allSeries.filter((x, i) => x.sub_sector === '')
+var topSeries = allSeries.filter((x, i) => x.sub_sector === '' || x.sub_sector===x.sector)
 
 console.log(allSeries)
 
