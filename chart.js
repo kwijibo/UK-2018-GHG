@@ -50,7 +50,7 @@ function showChart(seriesIndex) {
     //.sort((a,b) => a.data[0].y > b.data[0].y),
     chart: {
       type: 'area',
-      stacked: true,
+      stacked:  false,
       height: 500,
       events: {
         click: function(event, context, config) {
@@ -137,3 +137,13 @@ function showChart(seriesIndex) {
 }
 
 showChart()
+
+
+function getState(key, defaultVal){
+    return history.state[key] || defaultVal
+}
+
+function pushState(key, val, title){
+    var newTitle = title || document.title
+    history.pushState(Object.assign({[key]: val}, history.state), title, '?'+key+'='+val)
+}
