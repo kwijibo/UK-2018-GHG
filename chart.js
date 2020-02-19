@@ -5,44 +5,62 @@ var data = tsv
   .map(l => l.split('\t').map(c => c.replace(/^"|"$/g, '')))
 var years = data[2].slice(2)
 var rows = data.slice(3)
-console.log(rows)
-function findSector(rows, i) {
-  var r = rows[i]
-  return r[0] && (!r[1] || r[1] === r[0]) ? r[0] : findSector(rows, i - 1)
-}
-var allSeries = rows
-  .map((r, i) => ({
-    sector: findSector(rows, i),
-    sub_sector: r[1],
-    data: r
+
+var seriesTree = rows.reduce(
+  function(result, row) {
+    var lastTop = result.lastTop
+    var lastSub = result.lastSub
+    var first = row[0]
+    var second = row[1]
+    var dataPoints = row
       .slice(2)
       .filter(y => y !== '')
-      .map((y, i) => ({y: new Number(y), x: years[i]})),
-  }))
-  .filter((x, i) => x.data.length && x.sector !== 'Grand Total')
-var topSeries = allSeries.filter((x, i) => x.sub_sector === '' || x.sub_sector===x.sector)
+      .map((y, i) => ({y: new Number(y), x: years[i]}))
+    if (!dataPoints.length) return result
 
-console.log(allSeries)
+    var isTop = !second || first === second
+    var isSub = !isTop && first
+    var isSubSub = !!second
+    if (isTop) {
+      result.lastTop = first
+      if (first === 'Grand Total') {
+        result.tree['data'] = dataPoints
+      } else {
+        result.tree[first] = {data: dataPoints}
+      }
+      result.lastSub = undefined
+    } else if (isSub) {
+      result.lastSub = first
+      result.tree[lastTop][first] = {[second]: dataPoints}
+      result.uncalculatedSubs.push([lastTop, first])
+    } else if (isSubSub) {
+      var sub = lastSub || '_'
+      result.tree[lastTop][sub] = result.tree[lastTop][sub] || {}
+      result.tree[lastTop][sub][second] = dataPoints
+    }
+    return result
+  },
+  {tree: {}, lastTop: undefined, lastSub: undefined, uncalculatedSubs: []},
+)
 
-function showChart(seriesIndex) {
-  if (seriesIndex === undefined) {
-    var title =
-      'Estimated territorial greenhouse gas emissions by source category, UK 1990-2018'
-    var series = topSeries.map(x => ({
-      name: x.sector,
-      data: x.data,
-    }))
-  } else {
-    var title = topSeries[seriesIndex].sector
-    var series = allSeries
-      .filter(
-        x => x.sector === topSeries[seriesIndex].sector && x.sub_sector !== '',
-      )
-      .map(x => ({
-        name: x.sub_sector,
-        data: x.data,
-      }))
-  }
+seriesTree.uncalculatedSubs.forEach(function(p) {
+  const [first, second] = p
+  var sub = seriesTree.tree[first][second]
+  sub.data = Object.values(sub).reduce(
+    zipLists((a, b) => ({y: a.y + b.y, x: a.x})),
+  )
+})
+
+function zipLists(f) {
+  return (a, b) => a.map((x, i) => f(x, b[i]))
+}
+
+function showChart(title, tree) {
+  var subTree = tree._ ? tree._ : tree
+  var entries = Object.entries(subTree).filter(([k, v]) => k != 'data')
+  var series = entries.map(([k, v]) => ({name: k, data: v.data ? v.data : v}))
+  //  series.push({name: "Total", data: tree.data})
+  console.log(series)
   document.title = 'UK GHG 1990-2018 :: ' + title
 
   var options = {
@@ -50,16 +68,20 @@ function showChart(seriesIndex) {
     //.sort((a,b) => a.data[0].y > b.data[0].y),
     chart: {
       type: 'area',
-      stacked:  false,
+      stacked: false,
       height: 500,
       events: {
         click: function(event, context, config) {
           console.info(event, context, config)
           var sI = config.seriesIndex
-          console.info(sI)
+          console.info(sI, entries[sI])
           if (sI > -1) {
             chart.destroy()
-            seriesIndex === undefined ? showChart(sI) : showChart()
+            if (Array.isArray(entries[sI][1])) {
+              showTopChart()
+            } else {
+              showChart(entries[sI][0], entries[sI][1])
+            }
           }
         },
       },
@@ -95,6 +117,9 @@ function showChart(seriesIndex) {
       },
 
       labels: {
+        formatter: function(val) {
+          return parseInt(val)
+        },
         style: {
           color: '#8e8da4',
         },
@@ -121,14 +146,8 @@ function showChart(seriesIndex) {
       },
     },
     grid: {
-      yaxis: {
-        lines: {
-          offsetX: -30,
-        },
-      },
-      padding: {
-        left: 20,
-      },
+      xaxis: {lines: {show: false}},
+      yaxis: {lines: {show: false}},
     },
   }
 
@@ -136,14 +155,12 @@ function showChart(seriesIndex) {
   chart.render()
 }
 
-showChart()
-
-
-function getState(key, defaultVal){
-    return history.state[key] || defaultVal
+function showTopChart() {
+  showChart(
+    'Estimated territorial greenhouse gas emissions by source category, UK 1990-2018',
+    seriesTree.tree,
+  )
 }
 
-function pushState(key, val, title){
-    var newTitle = title || document.title
-    history.pushState(Object.assign({[key]: val}, history.state), title, '?'+key+'='+val)
-}
+showTopChart()
+
