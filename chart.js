@@ -81,7 +81,7 @@ function showChart(title, tree) {
       
       type: 'area',
       stacked: false,
-      height: 500,
+      height: 650,
       events: {
         click: function(event, context, config) {
           console.info(event, context, config)
