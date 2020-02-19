@@ -65,8 +65,20 @@ function showChart(title, tree) {
 
   var options = {
     series: series,
-    //.sort((a,b) => a.data[0].y > b.data[0].y),
+    colors: [
+        '#008FFB',
+        '#00E396',
+        '#FEB019',
+        '#FF4560',
+        '#775DD0',
+        '#4ecdc4',
+        '#c7f464',
+        '#81D4FA',
+        '#546E7A',
+        '#fd6a6a',
+      ],
     chart: {
+      
       type: 'area',
       stacked: false,
       height: 500,
@@ -163,4 +175,3 @@ function showTopChart() {
 }
 
 showTopChart()
-
