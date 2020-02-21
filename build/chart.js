@@ -132,10 +132,19 @@ function recalculateSub(first, second) {
 
 recalculate();
 
+history.onpopstate = function () {
+  for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
+    args[_key] = arguments[_key];
+  }
+
+  console.log(args);
+  showChart();
+};
+
 window.onload = function () {
   var avnavCheck = document.getElementById('include-avnav');
   var avnav = getKey('avnav');
-  avnavCheck.setAttribute('checked', avnav);
+  if (avnav) avnavCheck.setAttribute('checked', avnav);
   toggleAvNav(!!avnav);
   var chart = showChart();
   var chartType = document.getElementById('chart-type');
@@ -192,7 +201,8 @@ function showChart() {
 
     return k != 'data' && k != '_';
   });
-  var series = entries.map(function (_ref3) {
+  console.log(title, tree, subTree, entries);
+  var series = entries.length ? entries.map(function (_ref3) {
     var _ref4 = _slicedToArray(_ref3, 2),
         k = _ref4[0],
         v = _ref4[1];
@@ -201,7 +211,7 @@ function showChart() {
       name: k,
       data: v.data ? v.data : v
     };
-  }); //  series.push({name: "Total", data: tree.data})
+  }) : [subTree]; //  series.push({name: "Total", data: tree.data})
 
   console.log('series', series);
   document.title = title + ' :: UK GHG 1990-2018';
@@ -215,7 +225,7 @@ function showChart() {
   } else if (chartType == 'Relative') {
     stacked = true;
     stackType = '100%';
-    var totalData = subTree.data;
+    var totalData = tree.data;
     series = series.map(function (x) {
       return {
         name: x.name,
@@ -237,16 +247,16 @@ function showChart() {
       stacked: stacked,
       stackType: stackType,
       height: 650,
+      width: 650 / 9 * 16,
       events: {
         click: function click(event, context, config) {
           console.info(event, context, config);
           var sI = config.seriesIndex;
-          console.info(sI, entries[sI]);
 
           if (sI > -1) {
             chart.destroy();
 
-            if (Array.isArray(entries[sI][1])) {
+            if (getKey('sector') === "Public" || Array.isArray(series[sI][1])) {
               setKey('sector', undefined);
               setKey('subsector', undefined);
               showTopChart();

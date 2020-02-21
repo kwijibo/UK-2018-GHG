@@ -87,10 +87,16 @@ function recalculateSub(first, second) {
 }
 
 recalculate()
+
+history.onpopstate = (...args) => {
+    console.log(args)
+    showChart()
+}
+
 window.onload = function() {
   var avnavCheck = document.getElementById('include-avnav')
   var avnav = getKey('avnav')
-  avnavCheck.setAttribute('checked', avnav)
+  if(avnav) avnavCheck.setAttribute('checked', avnav)
   toggleAvNav(!!avnav)
 
   var chart = showChart()
@@ -132,7 +138,8 @@ function showChart() {
   var entries = Object.entries(subTree).filter(
     ([k, v]) => k != 'data' && k != '_',
   )
-  var series = entries.map(([k, v]) => ({name: k, data: v.data ? v.data : v}))
+    console.log(title, tree, subTree, entries)
+  var series = entries.length? entries.map(([k, v]) => ({name: k, data: v.data ? v.data : v})) : [subTree]
   //  series.push({name: "Total", data: tree.data})
   console.log('series', series)
   document.title = title + ' :: UK GHG 1990-2018'
@@ -146,7 +153,7 @@ function showChart() {
   } else if (chartType == 'Relative') {
     stacked = true
     stackType = '100%'
-    var totalData = subTree.data
+    var totalData = tree.data
     series = series.map(x => ({
       name: x.name,
       data: x.data.map((a, i) => ({x: a.x, y: 100 * a.y / totalData[i].y})),
@@ -171,14 +178,14 @@ function showChart() {
       stacked: stacked,
       stackType: stackType,
       height: 650,
+      width: (650/9)*16,
       events: {
         click: function(event, context, config) {
           console.info(event, context, config)
           var sI = config.seriesIndex
-          console.info(sI, entries[sI])
           if (sI > -1) {
             chart.destroy()
-            if (Array.isArray(entries[sI][1])) {
+            if (getKey('sector')==="Public" || Array.isArray(series[sI][1])) {
               setKey('sector', undefined)
               setKey('subsector', undefined)
               showTopChart()
