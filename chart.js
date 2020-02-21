@@ -177,8 +177,8 @@ function showChart() {
       type: 'area',
       stacked: stacked,
       stackType: stackType,
-      height: 650,
-      width: (650/9)*16,
+      height: 700,
+      width: (700/9)*16,
       events: {
         click: function(event, context, config) {
           console.info(event, context, config)
