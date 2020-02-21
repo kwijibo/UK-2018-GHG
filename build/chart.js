@@ -132,12 +132,12 @@ function recalculateSub(first, second) {
 
 recalculate();
 
-history.onpopstate = function () {
+window.onpopstate = function () {
   for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
     args[_key] = arguments[_key];
   }
 
-  console.log(args);
+  console.log('onpopstate', args);
   showChart();
 };
 
@@ -254,12 +254,13 @@ function showChart() {
           var sI = config.seriesIndex;
 
           if (sI > -1) {
+            console.log('click>series', series[sI]);
             chart.destroy();
 
-            if (getKey('sector') === "Public" || Array.isArray(series[sI][1])) {
+            if (getKey('sector') === 'Public' || Array.isArray(series[sI])) {
               setKey('sector', undefined);
               setKey('subsector', undefined);
-              showTopChart();
+              showChart();
             } else {
               if (getKey('sector')) {
                 setKey('subsector', series[sI].name, getKey('sector') + ' :: ' + series[sI].name);
@@ -297,7 +298,7 @@ function showChart() {
     },
     yaxis: {
       title: {
-        text: chartType === "Relative" ? "% of total GHG emissions" : 'MtCO2e'
+        text: chartType === 'Relative' ? '% of total GHG emissions' : 'MtCO2e'
       },
       tickAmount: 20,
       floating: false,
@@ -358,10 +359,6 @@ function showChart() {
   return chart;
 }
 
-function showTopChart() {
-  showChart('Estimated territorial greenhouse gas emissions by source category, UK 1990-2018', seriesTree.tree);
-}
-
 function parseTSV(tsv) {
   return tsv.trim().split('\n').map(function (l) {
     return l.split('\t').map(function (c) {
@@ -400,39 +397,48 @@ function getKey(k, defVal) {
 function getOptions() {
   var sector = getKey('sector');
   var subsector = getKey('subsector');
-  var includeAvNav = getKey('avnav');
   var chartType = getKey('chartType');
   var sectortree = seriesTree.tree[sector];
 
   if (sector && sectortree) {
     if (subsector) {
-      var subsectortree = sectortree[subsector] || sectortree[subsector]._[subsector];
+      var subsectortree = sectortree[subsector] || sectortree._ && sectortree._[subsector];
 
       if (subsectortree) {
-        return {
-          tree: subsectortree,
-          title: subsector,
-          avnav: includeAvNav,
-          chartType: chartType
-        };
+        //if no name, there are no more subsectors to drill down into
+        if (subsectortree.data) {
+          return {
+            tree: subsectortree,
+            title: subsector,
+            chartType: chartType
+          };
+        } else {
+          return topLevelOptions(chartType);
+        }
+      } else {
+        return topLevelOptions(chartType);
       }
     }
 
     return {
       tree: sectortree,
       title: sector,
-      avnav: includeAvNav,
       chartType: chartType
     };
   }
 
+  return topLevelOptions(chartType);
+}
+
+var topLevelOptions = function topLevelOptions(chartType) {
+  setKey('sector', undefined);
+  setKey('subsector', undefined);
   return {
     tree: seriesTree.tree,
     title: 'Estimated territorial greenhouse gas emissions by source category, UK 1990-2018',
-    avnav: includeAvNav,
     chartType: chartType
   };
-}
+};
 /*function update(action){
     switch(action.type){
         case "":

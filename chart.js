@@ -88,15 +88,15 @@ function recalculateSub(first, second) {
 
 recalculate()
 
-history.onpopstate = (...args) => {
-    console.log(args)
-    showChart()
+window.onpopstate = (...args) => {
+  console.log('onpopstate', args)
+  showChart()
 }
 
 window.onload = function() {
   var avnavCheck = document.getElementById('include-avnav')
   var avnav = getKey('avnav')
-  if(avnav) avnavCheck.setAttribute('checked', avnav)
+  if (avnav) avnavCheck.setAttribute('checked', avnav)
   toggleAvNav(!!avnav)
 
   var chart = showChart()
@@ -138,8 +138,10 @@ function showChart() {
   var entries = Object.entries(subTree).filter(
     ([k, v]) => k != 'data' && k != '_',
   )
-    console.log(title, tree, subTree, entries)
-  var series = entries.length? entries.map(([k, v]) => ({name: k, data: v.data ? v.data : v})) : [subTree]
+  console.log(title, tree, subTree, entries)
+  var series = entries.length
+    ? entries.map(([k, v]) => ({name: k, data: v.data ? v.data : v}))
+    : [subTree]
   //  series.push({name: "Total", data: tree.data})
   console.log('series', series)
   document.title = title + ' :: UK GHG 1990-2018'
@@ -178,17 +180,18 @@ function showChart() {
       stacked: stacked,
       stackType: stackType,
       height: 700,
-      width: (700/9)*16,
+      width: 700 / 9 * 16,
       events: {
         click: function(event, context, config) {
           console.info(event, context, config)
           var sI = config.seriesIndex
           if (sI > -1) {
+            console.log('click>series', series[sI])
             chart.destroy()
-            if (getKey('sector')==="Public" || Array.isArray(series[sI][1])) {
+            if (getKey('sector') === 'Public' || Array.isArray(series[sI])) {
               setKey('sector', undefined)
               setKey('subsector', undefined)
-              showTopChart()
+              showChart()
             } else {
               if (getKey('sector')) {
                 setKey(
@@ -230,7 +233,9 @@ function showChart() {
       },
     },
     yaxis: {
-        title: {text: chartType==="Relative"? "% of total GHG emissions" :'MtCO2e'},
+      title: {
+        text: chartType === 'Relative' ? '% of total GHG emissions' : 'MtCO2e',
+      },
       tickAmount: 20,
       floating: false,
       padding: {
@@ -284,12 +289,6 @@ function showChart() {
   return chart
 }
 
-function showTopChart() {
-  showChart(
-    'Estimated territorial greenhouse gas emissions by source category, UK 1990-2018',
-    seriesTree.tree,
-  )
-}
 function parseTSV(tsv) {
   return tsv
     .trim()
@@ -328,32 +327,44 @@ function getKey(k, defVal) {
 function getOptions() {
   var sector = getKey('sector')
   var subsector = getKey('subsector')
-  var includeAvNav = getKey('avnav')
   var chartType = getKey('chartType')
   var sectortree = seriesTree.tree[sector]
   if (sector && sectortree) {
     if (subsector) {
       var subsectortree =
-        sectortree[subsector] || sectortree[subsector]._[subsector]
+        sectortree[subsector] || (sectortree._ && sectortree._[subsector])
       if (subsectortree) {
-        return {
-          tree: subsectortree,
-          title: subsector,
-          avnav: includeAvNav,
-          chartType,
+        //if no name, there are no more subsectors to drill down into
+        if (subsectortree.data) {
+          return {
+            tree: subsectortree,
+            title: subsector,
+            chartType,
+          }
+        } else {
+          return topLevelOptions(chartType)
         }
+      } else {
+          return topLevelOptions(chartType)
       }
     }
-    return {tree: sectortree, title: sector, avnav: includeAvNav, chartType}
+    return {tree: sectortree, title: sector, chartType}
   }
+  return topLevelOptions(chartType)
+}
+
+const topLevelOptions = chartType => {
+  setKey('sector', undefined)
+  setKey('subsector', undefined)
+
   return {
     tree: seriesTree.tree,
     title:
       'Estimated territorial greenhouse gas emissions by source category, UK 1990-2018',
-    avnav: includeAvNav,
     chartType,
   }
 }
+
 /*function update(action){
     switch(action.type){
         case "":
