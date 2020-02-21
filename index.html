@@ -1,6 +1,50 @@
+<head>
+    <style type="text/css">
+    * {
+        font-family: Arial;
+    }
+    label, p {
+        font-size: 16px
+    }
+    </style>
+</head>
 <body>
-    <div id="chart"></div>
-<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <div>
+        <div id="chart"></div>
+        <ul type="square">
+            <li>
+                <label for="include-avnav">Include International Aviation and Shipping</label><input id="include-avnav" type="checkbox">
+            </li>
+            <li>
+                <label for="chart-type">Style</label>
+                <select id="chart-type">
+                    <option>Unstacked</option>
+                    <option>Stacked</option>
+                    <option>Relative</option>
+                </select>
+            </li>
+        </ul>
+        <p>Data from <a href="https://www.gov.uk/government/statistics/final-uk-greenhouse-gas-emissions-national-statistics-1990-to-2018">Final UK greenhouse gas emissions national statistics: 1990 to 2018</a>, Published 4 February 2020.</p>
+        <p><a href="https://github.com/kwijibo/UK-2018-GHG">Source code available here</a></p>
+    </div>
+<pre id="aviation-shipping" style="display:none">
+"Table 8: Estimated greenhouse gas emissions arising from use of fuels from UK international aviation and shipping bunkers, UK 1990-2018"																															
+Coverage: United Kingdom																														Million tonnes carbon dioxide equivalent (MtCO2e)	
+Memo item	Gas	1990	1991	1992	1993	1994	1995	1996	1997	1998	1999	2000	2001	2002	2003	2004	2005	2006	2007	2008	2009	2010	2011	2012	2013	2014	2015	2016	2017	2018	
+International aviation bunkers	Carbon dioxide (CO2)	15.4	15.1	16.7	18.0	18.7	19.9	21.1	22.4	25.0	27.1	29.9	29.2	28.7	29.4	32.2	34.8	35.3	35.1	34.4	32.6	31.5	33.0	32.1	32.4	32.6	33.2	33.4	35.9	36.3	
+	Methane (CH4)	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	
+	Nitrous oxide (N2O)	0.1	0.1	0.2	0.2	0.2	0.2	0.2	0.2	0.2	0.3	0.3	0.3	0.3	0.3	0.3	0.3	0.3	0.3	0.3	0.3	0.3	0.3	0.3	0.3	0.3	0.3	0.3	0.3	0.3	
+	Total	15.5	15.3	16.9	18.1	18.9	20.1	21.3	22.6	25.2	27.4	30.2	29.5	28.9	29.6	32.5	35.1	35.6	35.5	34.7	32.9	31.8	33.3	32.4	32.7	32.9	33.5	33.7	36.3	36.7	
+International shipping bunkers	Carbon dioxide (CO2)	8.0	7.9	8.1	7.8	7.3	7.8	8.4	9.4	9.7	7.4	6.6	7.2	6.1	5.6	6.6	6.5	7.4	7.5	10.9	10.4	8.9	9.9	8.4	8.6	9.0	8.0	8.5	7.8	7.8	
+	Methane (CH4)	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	
+	Nitrous oxide (N2O)	0.1	0.1	0.1	0.1	0.1	0.1	0.1	0.1	0.1	0.1	0.1	0.1	0.1	0.1	0.1	0.1	0.1	0.1	0.2	0.1	0.1	0.1	0.1	0.1	0.1	0.1	0.1	0.1	0.1	
+	Total	8.1	8.0	8.2	8.0	7.4	7.9	8.6	9.5	9.9	7.5	6.7	7.3	6.2	5.7	6.7	6.6	7.5	7.6	11.1	10.6	9.0	10.0	8.5	8.7	9.1	8.1	8.6	7.9	7.9	
+Grand Total		23.7	23.2	25.1	26.1	26.4	28.0	29.8	32.1	35.1	34.9	36.9	36.8	35.1	35.3	39.2	41.7	43.2	43.1	45.8	43.5	40.8	43.3	41.0	41.4	42.0	41.6	42.3	44.2	44.6	
+Footnotes:																															
+"1. Emissions arising from use of fuels from UK international aviation and shipping bunkers do not count towards the UK greenhouse gas emissions totals as reported to the UNFCCC and the European Commission, or used for assessing progress against UK emissions reduction targets. They are not included in the UK totals in other tables in this publication."																															
+2. Whether emissions from refuelling at UK-based international aviation and shipping bunkers can be used as an accurate estimate of UK international aviation and shipping emissions depends on what assumptions are being made about how to allocate international aviation and shipping emissions to different countries.																															
+3. Includes aircraft and shipping movements originating in the UK travelling to the UK Crown Dependencies and Overseas Territories.																													    
+</pre>
 <pre id="table3" style="display:none">
 "Table 3: Estimated territorial greenhouse gas emissions by source category, UK 1990-2018"																																
 Coverage: United Kingdom																														Million tonnes carbon dioxide equivalent (MtCO2e)		
@@ -131,5 +175,6 @@ Footnotes:
 1. The entire time series is revised each year to take account of methodological improvements. 																																
     
 </pre>
-<script src="chart.js"></script>
+<script src="build/apexcharts.min.js"></script>
+<script src="build/chart.js"></script>
 </body>
